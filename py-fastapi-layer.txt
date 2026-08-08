@@ -1,4 +1,6 @@
+opencv-python-headless>=4.8.0,<4.10.0
 Pillow
+cryptography<39.0.0
 psutil
 pymysql
 dbutils
@@ -15,7 +17,6 @@ oss2
 OpenAI
 paho-mqtt
 alibabacloud_onsmqtt20200420
-alibabacloud-oss-v2
 aliyun-python-sdk-core
 aliyun-python-sdk-dysmsapi
 kafka-python
@@ -43,3 +44,5 @@ qrcode
 dashscope
 openpyxl
 werkzeug
+numpy>=1.23.0,<2.0.0
+PyWavelets>=1.4.0,<2.0.0
