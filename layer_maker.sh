@@ -1,3 +1,4 @@
+sudo rm my-layer-code.zip
 # 创建专用临时目录
 mkdir -p /data/pip-tmp
 

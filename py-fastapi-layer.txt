@@ -46,3 +46,7 @@ openpyxl
 werkzeug
 numpy>=1.23.0,<2.0.0
 PyWavelets>=1.4.0,<2.0.0
+pyexiv2==2.16.0
+jieba
+pytz==2025.2
+croniter==6.2.4
