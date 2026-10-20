@@ -1,0 +1,7 @@
+arkruntime
+jieba
+pytz==2025.2
+croniter==6.2.4
+pydub==0.25.1
+audioop-lts==0.2.2
+mutagen==1.48.1
