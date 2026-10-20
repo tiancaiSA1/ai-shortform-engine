@@ -28,16 +28,15 @@ def get_post_phone_datas():
         fb.readline()
         for line in fb:
             lc = line.strip('\n').split('\t')
-            if len(lc) == 8:
-                phone_number, vercode, _, b_path, breed, notes, pwd, is_close = lc
+            if len(lc) == 10:
+                phone_number, vercode, _, b_path, breed, notes, pwd, nickname, gender, is_close = lc
                 if len(b_path) > 0:
                     local_path = f"D:/work/ccc/{b_path}"
-                    already_post_js_path = f"{local_path}/already_post_js.txt"
+                    already_post_js_path = f"{local_path}/already_post_js.json"
                     if os.path.exists(already_post_js_path):
-                        with open(already_post_js_path, "r", encoding="utf-8") as ff:
-                            already_post_js = json.loads(ff.readline().strip('\n'))
-                            already_post_record = already_post_js['already_post_record']
-                            last_post_ts = already_post_js['last_post_ts']
+                        already_post_js = json.load(open(already_post_js_path, 'r', encoding="utf-8"))
+                        already_post_record = already_post_js['already_post_record']
+                        last_post_ts = already_post_js['last_post_ts']
                     else:
                         already_post_record = 999999
                         last_post_ts = -1
@@ -45,7 +44,7 @@ def get_post_phone_datas():
                         img_pathlist, max_num = get_img_datas(local_path, already_post_record)
                         active_s_phone_numbers[phone_number] = {'img_pathlist': img_pathlist, 'max_num': max_num,
                                                                 'last_post_ts': last_post_ts, 'local_path': local_path,
-                                                                'vercode': vercode, 'pwd': pwd}
+                                                                'vercode': vercode, 'pwd': pwd, 'nickname': nickname, 'gender': gender}
     post_datas = sorted(active_s_phone_numbers.items(), key=lambda x: x[1]['last_post_ts'], reverse=False)
     post_data = post_datas[0]
     _p_number, _p_datas = post_data
@@ -53,7 +52,7 @@ def get_post_phone_datas():
     return _p_number, _p_datas
 
 
-def regist_login(phone_number, password, vercode):
+def regist_login(phone_number, password, nickname, gender, vercode):
     responses = requests.post(
         f"{basic_url}/account_sys/phonenumber_sendcode",
         json={"using_type": 10, "phonenumber":phone_number})
@@ -87,6 +86,16 @@ def regist_login(phone_number, password, vercode):
         status_code = responses.status_code
         if status_code != 200:
             print("set pwd error")
+            return None
+        responses = requests.post(
+            f"{basic_url}/account_sys/reg_basic_msg_of_user",
+            json={
+                "nickname": nickname,
+                "gender": gender
+            }, headers={"X-User-ID": token})
+        status_code = responses.status_code
+        if status_code != 200:
+            print("update username error")
             return None
     return token
 
@@ -132,14 +141,18 @@ def upload_file(post_data):
 
 
 if __name__ == '__main__':
+    tmp_file_path = "now_process/tmp_file"
+    if os.path.exists(tmp_file_path):
+        shutil.rmtree(tmp_file_path)
+    os.mkdir(tmp_file_path)
     s_phone_numbers = json.load(open("basic/s_phone_numbers.json", "r", encoding="utf-8"))
 
     sel_phone_number, sel_already_post_js = get_post_phone_datas()
-    sel_token = regist_login(phone_number=sel_phone_number, password=sel_already_post_js['pwd'], vercode=sel_already_post_js['vercode'])
+    sel_token = regist_login(phone_number=sel_phone_number, password=sel_already_post_js['pwd'], nickname=sel_already_post_js['nickname'], gender=sel_already_post_js['gender'], vercode=sel_already_post_js['vercode'])
     if sel_token is not None:
         sel_already_post_js["token"] = sel_token
     for img_path in sel_already_post_js['img_pathlist']:
-        shutil.copy(img_path, "now_process/" + img_path.split("/")[-1])
+        shutil.copy(img_path, f"{tmp_file_path}/{img_path.split("/")[-1]}")
     upload_file(sel_already_post_js)
     gen_post.gen_post(sel_already_post_js, conf['api_key'])
     json.dump(sel_already_post_js, open("now_process/wait_for_post.json", "w", encoding="utf-8"), ensure_ascii=False, indent=2)
