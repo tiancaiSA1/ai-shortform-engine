@@ -12,7 +12,7 @@ def get_img_datas(folder_path: str, already_post_record: int):
     _max_num = 0
     _num_img_pathlist = {}
     for fname in os.listdir(folder_path):
-        if fname.endswith(".png"):
+        if fname.endswith(".png") or fname.endswith(".jpg"):
             num = int(fname.split('.')[0].split("-")[0])
             if _max_num <= num < already_post_record:
                 _max_num = num
@@ -52,7 +52,7 @@ def get_post_phone_datas():
     return _p_number, _p_datas
 
 
-def regist_login(phone_number, password, nickname, gender, vercode):
+def regist_login(post_data, phone_number, password, nickname, gender, vercode):
     responses = requests.post(
         f"{basic_url}/account_sys/phonenumber_sendcode",
         json={"using_type": 10, "phonenumber":phone_number})
@@ -87,6 +87,17 @@ def regist_login(phone_number, password, nickname, gender, vercode):
         if status_code != 200:
             print("set pwd error")
             return None
+
+    responses = requests.post(
+        f"{basic_url}/account_sys/get_basic_msg_of_user",
+        json={}, headers={"X-User-ID": token})
+    status_code = responses.status_code
+    if status_code != 200:
+        print("get id error")
+        return None
+    user_msg = responses.json()
+    post_data['unique_random_id'] = user_msg['unique_random_id']
+    if user_msg['nickname'].startswith('用户'):
         responses = requests.post(
             f"{basic_url}/account_sys/reg_basic_msg_of_user",
             json={
@@ -148,7 +159,9 @@ if __name__ == '__main__':
     s_phone_numbers = json.load(open("basic/s_phone_numbers.json", "r", encoding="utf-8"))
 
     sel_phone_number, sel_already_post_js = get_post_phone_datas()
-    sel_token = regist_login(phone_number=sel_phone_number, password=sel_already_post_js['pwd'], nickname=sel_already_post_js['nickname'], gender=sel_already_post_js['gender'], vercode=sel_already_post_js['vercode'])
+    # print(sel_already_post_js)
+    sel_token = regist_login(post_data=sel_already_post_js, phone_number=sel_phone_number, password=sel_already_post_js['pwd'],
+                             nickname=sel_already_post_js['nickname'], gender=sel_already_post_js['gender'], vercode=sel_already_post_js['vercode'])
     if sel_token is not None:
         sel_already_post_js["token"] = sel_token
     for img_path in sel_already_post_js['img_pathlist']:

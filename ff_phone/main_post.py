@@ -9,14 +9,6 @@ conf = json.load(open("conf.json", 'r'))
 basic_url = conf['b_url']
 
 def post(post_data):
-    responses = requests.post(
-        f"{basic_url}/account_sys/get_basic_msg_of_user",
-        json={}, headers={"X-User-ID": post_data['token']})
-    status_code = responses.status_code
-    if status_code != 200:
-        print("get id error")
-        return None
-    unique_random_id = responses.json()['unique_random_id']
 
     responses = requests.post(
         f"{basic_url}/community/push_feed",
@@ -26,7 +18,7 @@ def post(post_data):
             "visibility_type": "公开可见",
             "title": post_data['title'],
             "tags": ["宠物"],
-            "author_unique_id": unique_random_id
+            "author_unique_id": post_data['unique_random_id']
         }, headers={"X-User-ID": post_data['token']})
 
     status_code = responses.status_code
