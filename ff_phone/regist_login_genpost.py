@@ -19,7 +19,10 @@ def get_img_datas(folder_path: str, already_post_record: int):
             if num not in _num_img_pathlist:
                 _num_img_pathlist[num] = []
             _num_img_pathlist[num].append(f"{folder_path}/{fname}")
-    return _num_img_pathlist.get(_max_num, None), _max_num
+    if _max_num in _num_img_pathlist:
+        return _num_img_pathlist[_max_num], _max_num
+    else:
+        return None, None
 
 
 def get_post_phone_datas():
@@ -42,9 +45,10 @@ def get_post_phone_datas():
                         last_post_ts = -1
                     if is_close == '0':
                         img_pathlist, max_num = get_img_datas(local_path, already_post_record)
-                        active_s_phone_numbers[phone_number] = {'img_pathlist': img_pathlist, 'max_num': max_num,
-                                                                'last_post_ts': last_post_ts, 'local_path': local_path,
-                                                                'vercode': vercode, 'pwd': pwd, 'nickname': nickname, 'gender': gender}
+                        if img_pathlist:
+                            active_s_phone_numbers[phone_number] = {'img_pathlist': img_pathlist, 'max_num': max_num,
+                                                                    'last_post_ts': last_post_ts, 'local_path': local_path,
+                                                                    'vercode': vercode, 'pwd': pwd, 'nickname': nickname, 'gender': gender}
     post_datas = sorted(active_s_phone_numbers.items(), key=lambda x: x[1]['last_post_ts'], reverse=False)
     post_data = post_datas[0]
     _p_number, _p_datas = post_data
