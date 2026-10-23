@@ -110,7 +110,7 @@ def regist_login(post_data, phone_number, password, nickname, gender, vercode):
             }, headers={"X-User-ID": token})
         status_code = responses.status_code
         if status_code != 200:
-            print("update username error")
+            print(f"{responses.text}, update username error")
             return None
     return token
 
